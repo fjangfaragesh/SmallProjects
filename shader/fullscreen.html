@@ -2,6 +2,8 @@
     <head>
         <meta charset="utf-8"/>
         <script>
+const K = 2.0;
+        
 let canvas, gl, buffer, vertexShader,fragmentShader,shaderProgram,  timeUniformLocation, wUniformLocation, hUniformLocation, worhUniformLocation;
 function initGL(canv) {
     let gl = canv.getContext("webgl");
@@ -15,10 +17,13 @@ function initGL(canv) {
     console.log("Web-Gl is supported");
     return gl
 }
+
 onload = function() {
     canvas = document.getElementById("canvas");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth*K;
+    canvas.height = window.innerHeight*K;
+    canvas.style="width:" +  window.innerWidth + "px;height:" +  window.innerHeight + "px;";
+    
     gl = initGL(canvas);
     buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
