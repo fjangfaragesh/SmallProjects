@@ -1,0 +1,28 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="pde.js"></script>
+        <script>
+onload = function() {
+    ctx = document.getElementById("canv").getContext("2d");
+    pder = test();
+    pder.init();
+    pder.show(ctx);
+}
+       
+function los() {
+    setInterval(einFrame, 1);
+
+}
+function einFrame() {
+    for (let i = 0; i < 1; i++) pder.tick(1);
+    pder.show(ctx);
+}
+        </script>
+    
+    </head>
+    <body>
+        <canvas id="canv" width="256" height="256"></canvas>
+    
+    </body>
+</html>

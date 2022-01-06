@@ -1,0 +1,158 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <script>
+let canvas, gl, buffer, vertexShader,fragmentShader,shaderProgram,  timeUniformLocation, wUniformLocation, hUniformLocation, worhUniformLocation;
+function initGL(canv) {
+    let gl = canv.getContext("webgl");
+    if(!gl) {
+        gl = canv.getContext("experimental-webgl");
+        if(!gl) {
+            console.log("Web-GL is not supported!");
+            throw new Error("Web-GL is not supported!");
+        }
+    }
+    console.log("Web-Gl is supported");
+    return gl
+}
+onload = function() {
+    canvas = document.getElementById("canvas");
+    gl = initGL(canvas);
+    buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1.0,-1.0, 1.0,-1.0, -1.0,1.0, -1.0,1.0, 1.0,-1.0, 1.0,1.0]),gl.STATIC_DRAW);
+    
+    butt();
+    
+    aniLoop();
+}
+
+function aniLoop() {
+    requestAnimationFrame(aniLoop);
+    show();
+}
+
+
+function butt() {
+    setProgram(gl, document.getElementById("vCode").value, document.getElementById("fCode").value);
+    
+    let a = document.getElementById("a");
+    a.href = "fullscreen.html?vCode=" + encodeURIComponent(document.getElementById("vCode").value) + "&fCode=" + encodeURIComponent(document.getElementById("fCode").value);
+}
+
+function setProgram(gl, vCode, fCode) {
+    createProgram(gl, vCode, fCode);
+    
+    let positionLocation = gl.getAttribLocation(shaderProgram, "pos");
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+    
+    timeUniformLocation = gl.getUniformLocation(shaderProgram, "time");
+    wUniformLocation = gl.getUniformLocation(shaderProgram, "w");
+    hUniformLocation = gl.getUniformLocation(shaderProgram, "h");
+    worhUniformLocation = gl.getUniformLocation(shaderProgram, "worh");
+
+    show();
+}
+
+
+function createProgram(gl, vCode, fCode) {
+    createVertexShader(gl,vCode);
+    createFragmentShader(gl, fCode);
+        
+    shaderProgram = gl.createProgram()
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+    gl.linkProgram(shaderProgram);
+    if (!gl.getProgramParameter(shaderProgram,gl.LINK_STATUS)) {
+        console.error(gl.getProgramInfoLog(shaderProgram));
+        alert("linkungs fehler :(\n" + gl.getProgramInfoLog(shaderProgram));
+        throw new Error("linkungs fehler :(");
+    }
+        
+}
+    
+function createVertexShader(gl, vCode) {
+    vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertexShader, vCode);
+    gl.compileShader(vertexShader);
+    if (!gl.getShaderParameter(vertexShader,gl.COMPILE_STATUS)) {
+        console.error(gl.getShaderInfoLog(vertexShader));
+        alert("vertexShader compilierungs fehler :(\n" + gl.getShaderInfoLog(vertexShader));
+        throw new Error("vertexShader compilierungs fehler :(");
+    }
+}
+
+function createFragmentShader(gl, fCode) {
+    fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragmentShader, fCode);
+    gl.compileShader(fragmentShader);
+    if (!gl.getShaderParameter(fragmentShader,gl.COMPILE_STATUS)) {
+        console.error(gl.getShaderInfoLog(fragmentShader));
+        alert("FragmentShader compilierungs fehler :(\n" + gl.getShaderInfoLog(fragmentShader));
+        throw new Error("FragmentShader compilierungs fehler :(");
+    }
+}
+function show() {
+    gl.useProgram(shaderProgram);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+    let now = new Date();
+    
+    gl.uniform1f(timeUniformLocation, now.getMilliseconds()/1000.0 + now.getSeconds() + (now.getMinutes()%10.0)*60.0);
+    gl.uniform1f(wUniformLocation, canvas.width);
+    gl.uniform1f(hUniformLocation, canvas.height);
+    gl.uniform1f(worhUniformLocation, Math.min(canvas.width,canvas.height));
+
+    gl.clearColor(1.0,1.0,0.0,1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+}
+        
+        </script>
+    </head>
+    <body>
+        <canvas id="canvas" width="1000" height="400"></canvas><br>
+        <textarea id="vCode">
+attribute vec2 pos;
+void main() {
+    gl_Position = vec4(pos,0.0,1.0);
+}
+        </textarea><br>
+        <textarea id="fCode">
+precision mediump float;
+uniform float time;
+uniform float w;
+uniform float h;
+uniform float worh;
+
+int value(vec2 pos) {
+   float re = sin(time*0.01)*sin(time*0.1);
+   float reNew = 0.0;
+   float im = sin(time*0.01)*cos(time*0.1);
+   for (int i = 0; i < 1000; i++) {
+      if (re*re + im*im > 32.0) return i;
+      reNew = re*re - im*im + pos.x;
+      im = 2.0*re*im + pos.y;
+      re = reNew;
+   }
+   return 1000;
+}
+
+vec3 color(vec2 pos) {
+   float j = float(value(pos));
+   return vec3(j/50.0, j/200.0,j/800.0);
+}
+
+
+
+void main() {
+    vec2 p = vec2(gl_FragCoord.x,gl_FragCoord.y);
+    p = (p - vec2(w,h)/2.0)/worh;
+    gl_FragColor = vec4(color(p),1.0);
+}
+        </textarea><br>
+        <input type="button" onclick="butt()" value="OK"><br>
+        <a href="" id="a">fullscreen</a>
+    </body>
+</html>
