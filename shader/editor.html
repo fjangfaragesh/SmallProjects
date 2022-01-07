@@ -126,6 +126,9 @@ uniform float w;
 uniform float h;
 uniform float worh;
 
+
+const int OVER = 3;
+
 int value(vec2 pos) {
    float re = sin(time*0.01)*sin(time*0.1);
    float reNew = 0.0;
@@ -139,17 +142,31 @@ int value(vec2 pos) {
    return 1000;
 }
 
+vec3 clampRGB(vec3 c) {
+   return vec3(clamp(c.x,0.0,1.0),clamp(c.y,0.0,1.0),clamp(c.z,0.0,1.0));
+}
+
 vec3 color(vec2 pos) {
    float j = float(value(pos));
-   return vec3(j/50.0, j/200.0,j/800.0);
+   return clampRGB(vec3(j/50.0, j/200.0,j/800.0));
 }
 
 
 
-void main() {
-    vec2 p = vec2(gl_FragCoord.x,gl_FragCoord.y);
+
+vec3 sample(vec2 delta) {
+    vec2 p = vec2(gl_FragCoord.x,gl_FragCoord.y) + delta;
     p = (p - vec2(w,h)/2.0)/worh;
-    gl_FragColor = vec4(color(p),1.0);
+    return color(p);
+}
+
+void main() {
+    vec3 c = vec3(0.0,0.0,0.0);
+
+    for (int i = 0; i < OVER; i++) for (int j = 0; j < OVER; j++) {
+        c += sample(vec2(float(i)/float(OVER),float(j)/float(OVER)));
+    }
+    gl_FragColor = vec4(c/float(OVER*OVER),1.0);
 }
         </textarea><br>
         <input type="button" onclick="butt()" value="OK"><br>

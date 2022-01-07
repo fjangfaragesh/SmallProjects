@@ -2,8 +2,6 @@
     <head>
         <meta charset="utf-8"/>
         <script>
-const K = 2.0;
-        
 let canvas, gl, buffer, vertexShader,fragmentShader,shaderProgram,  timeUniformLocation, wUniformLocation, hUniformLocation, worhUniformLocation;
 function initGL(canv) {
     let gl = canv.getContext("webgl");
@@ -20,10 +18,8 @@ function initGL(canv) {
 
 onload = function() {
     canvas = document.getElementById("canvas");
-    canvas.width = window.innerWidth*K;
-    canvas.height = window.innerHeight*K;
-    canvas.style="width:" +  window.innerWidth + "px;height:" +  window.innerHeight + "px;";
-    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;    
     gl = initGL(canvas);
     buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -51,6 +47,7 @@ function setProgram(gl, vCode, fCode) {
     let positionLocation = gl.getAttribLocation(shaderProgram, "pos");
     gl.enableVertexAttribArray(positionLocation);
     gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+        
     
     timeUniformLocation = gl.getUniformLocation(shaderProgram, "time");
     wUniformLocation = gl.getUniformLocation(shaderProgram, "w");
