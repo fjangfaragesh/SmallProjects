@@ -108,7 +108,16 @@ function show() {
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
-        
+
+function loadFromURL(s) {
+    let i = s.indexOf("?");
+    if (i == -1) return;
+    let urlParams = new URLSearchParams(s.substring(i+1,s.length));
+    document.getElementById("vCode").value = urlParams.get("vCode");
+    document.getElementById("fCode").value = urlParams.get("fCode");
+    butt();
+}
+
         </script>
     </head>
     <body>
@@ -170,6 +179,8 @@ void main() {
 }
         </textarea><br>
         <input type="button" onclick="butt()" value="OK"><br>
-        <a href="" id="a">fullscreen</a>
+        <a href="" id="a">fullscreen</a><br>
+        <a href="examples.html">examples</a><br>
+        <input type="button" value="loadFromURL" onclick="loadFromURL(prompt())">
     </body>
 </html>
