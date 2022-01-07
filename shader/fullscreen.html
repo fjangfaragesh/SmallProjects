@@ -100,7 +100,7 @@ function show() {
 
     let now = new Date();
     
-    gl.uniform1f(timeUniformLocation, now.getMilliseconds()/1000.0 + now.getSeconds() + (now.getMinutes()%10.0)*60.0);
+    gl.uniform1f(timeUniformLocation, now.getMilliseconds()/1000.0 + now.getSeconds() + now.getMinutes()*60.0);
     gl.uniform1f(wUniformLocation, canvas.width);
     gl.uniform1f(hUniformLocation, canvas.height);
     gl.uniform1f(worhUniformLocation, Math.min(canvas.width,canvas.height));
