@@ -6,7 +6,7 @@ let canvas, gl, buffer, vertexShader,fragmentShader,shaderProgram,  timeUniformL
 function initGL(canv) {
     let gl = canv.getContext("webgl",{preserveDrawingBuffer: true});
     if(!gl) {
-        gl = canv.getContext("experimental-webgl");
+        gl = canv.getContext("experimental-webgl",{preserveDrawingBuffer: true});
         if(!gl) {
             console.log("Web-GL is not supported!");
             throw new Error("Web-GL is not supported!");
