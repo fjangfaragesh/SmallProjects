@@ -1,12 +1,27 @@
 <html>
     <head>
         <meta charset="utf-8"/>
+        <style>
+.clock {
+    position: absolute;
+    top:0px;
+    right:0px;
+    background-color: rgba(255,255,255,0.25);
+    font-size: 40px;
+    font-family: monospace;
+    font-weight: bold;
+    border-radius: 15px;
+    margin:10px;
+    padding:10px;
+}
+        </style>
         <script>
 let canvas, gl, buffer, vertexShader,fragmentShader,shaderProgram,  timeUniformLocation, wUniformLocation, hUniformLocation, worhUniformLocation;
+let cDiv;
 function initGL(canv) {
-    let gl = canv.getContext("webgl");
+    let gl = canv.getContext("webgl",{preserveDrawingBuffer: true});
     if(!gl) {
-        gl = canv.getContext("experimental-webgl");
+        gl = canv.getContext("experimental-webgl",{preserveDrawingBuffer: true});
         if(!gl) {
             console.log("Web-GL is not supported!");
             throw new Error("Web-GL is not supported!");
@@ -33,12 +48,18 @@ onload = function() {
 function aniLoop() {
     requestAnimationFrame(aniLoop);
     show();
+    updateClock();
 }
 
 
 function loadCode() {
     let urlParams = new URLSearchParams(window.location.search);
     setProgram(gl, urlParams.get("vCode"), urlParams.get("fCode"));
+    
+    if (urlParams.get("clock")) {
+        enableClock();
+    }
+    
 }
 
 function setProgram(gl, vCode, fCode) {
@@ -108,8 +129,34 @@ function show() {
     gl.clearColor(1.0,1.0,0.0,1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+    
+    
+    
+
+    
 }
-        
+
+function enableClock() {
+    if (cDiv !== undefined) return;
+    cDiv = document.createElement("div");
+    cDiv.appendChild(document.createTextNode("EE:EE:EE"));
+    cDiv.className = "clock";
+    document.body.appendChild(cDiv);
+}
+function updateClock() {
+    if (cDiv === undefined) return;
+    cDiv.innerHTML = "";
+    
+    let now = new Date();
+    
+    cDiv.appendChild(document.createTextNode(frmtClk(now.getHours(),2) + ":" + frmtClk(now.getMinutes(),2) + ":" + frmtClk(now.getSeconds(),2)/* + "." + frmtClk(now.getMilliseconds(),3)*/));
+}
+function frmtClk(i, nDigits) {
+    let ret = i + "";
+    while (ret.length < nDigits) ret = "0" + ret;
+    return ret;
+}
+
         </script>
     </head>
     <body style="margin:0px">

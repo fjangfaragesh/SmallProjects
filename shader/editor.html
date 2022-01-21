@@ -4,7 +4,7 @@
         <script>
 let canvas, gl, buffer, vertexShader,fragmentShader,shaderProgram,  timeUniformLocation, wUniformLocation, hUniformLocation, worhUniformLocation;
 function initGL(canv) {
-    let gl = canv.getContext("webgl");
+    let gl = canv.getContext("webgl",{preserveDrawingBuffer: true});
     if(!gl) {
         gl = canv.getContext("experimental-webgl");
         if(!gl) {
