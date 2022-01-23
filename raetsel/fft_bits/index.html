@@ -1,0 +1,123 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <script src="fft.js"></script>
+<script>
+
+
+// ----------------------- Rätsel erstellen -------------------------------------
+
+function erstellen(str) {
+    let dataBytes = new TextEncoder().encode(str);// in UTF-8 bytes umwandeln
+    let dataBits = []; // liste aus 0 und 1 anlegen
+
+    for (let b of dataBytes) {
+    dataBits.push((b >> 7) & 1); // 7. Bit aus Byte extrahieren und in Liste hinten anhängen
+    dataBits.push((b >> 6) & 1); // 6. Bit aus Byte extrahieren und in Liste hinten anhängen
+    dataBits.push((b >> 5) & 1); // ...
+    dataBits.push((b >> 4) & 1); 
+    dataBits.push((b >> 3) & 1);
+    dataBits.push((b >> 2) & 1); 
+    dataBits.push((b >> 1) & 1); 
+    dataBits.push((b >> 0) & 1); 
+    }
+
+
+    // Für die FFT muss die Länge der Koeffizienten eine 2er Potenz sein, Hier wird die nächst höhere 2er Potenz berechnet
+    // n = 2^aufrunden(ld(länge))
+    let n = Math.pow(2,Math.ceil(Math.log2(dataBits.length))); 
+    while (dataBits.length < n) dataBits.push(0); //Nullen einfüllen
+
+    console.log("bits",dataBits);
+
+    let magischeZahlen = FFT.realFFT(dataBits); // fft anwenden
+
+    console.log("fft koeffizienten [real,imag]",magischeZahlen);
+
+    let s = "";
+
+    
+    for (let z of magischeZahlen) s += sinnvollRunden(z[0]) + ((z[1] < 0.0) ? " - " + -sinnvollRunden(z[1]) : " + " + sinnvollRunden(z[1])) + "i\n";// "x + yi" oder "x - ai" für jede Zahl in Text einfügen
+    // for (let z of magischeZahlen) s += z[0] + "\t" + z[1] + "\n";// real und imaginärteil als tsv ausgeben
+    return s;
+}
+
+
+// --------------- Rätsel lösen: ----------------------
+function loesen(s) {
+    let coefficients = [];
+    let lines = s.split("\n");
+    for (let l of lines) {
+        if (l === "") continue;
+        let space = l.indexOf(" ");
+        let realPart = l.substring(0,space)*1.0;// Realteil in Zahl umwandeln
+        let signumImag = l.charAt(space+1) === "-" ? -1.0 : 1.0;
+        let space2 = l.indexOf(" ",space+1);
+        let iChar = l.indexOf("i");
+        let imagPart = signumImag*l.substring(space2+1,iChar);
+        coefficients.push([realPart,imagPart]);
+    }
+
+
+    let samples = FFT.fft(coefficients,true);
+    let cleanedRealPartSamples = [];
+    
+    let maximalerFehler = 0.0; // zum debuggen mal den maximalen Fehler berechnen
+    for (let i = 0; i < samples.length; i++) {
+        cleanedRealPartSamples[i] = samples[i][0] > 0.5 ? 1 : 0; //gleitkommaungenauigkeiten bereinigen
+        let fehler = Math.abs(cleanedRealPartSamples[i] - samples[i][0]);
+        if (fehler > maximalerFehler) maximalerFehler = fehler;
+    }
+    
+    console.log("maximalerFehler",maximalerFehler);
+
+    console.log(cleanedRealPartSamples);
+
+    let solutionBytes = [];
+    for (let i = 0; i < cleanedRealPartSamples.length/8; i++) {
+        solutionBytes.push((cleanedRealPartSamples[0 + i*8] << 7)
+            | (cleanedRealPartSamples[1 + i*8] << 6)
+            | (cleanedRealPartSamples[2 + i*8] << 5)
+            | (cleanedRealPartSamples[3 + i*8] << 4)
+            | (cleanedRealPartSamples[4 + i*8] << 3)
+            | (cleanedRealPartSamples[5 + i*8] << 2)
+            | (cleanedRealPartSamples[6 + i*8] << 1)
+            | (cleanedRealPartSamples[7 + i*8] << 0)); // bits in bytes umwandeln
+    }
+
+    console.log(solutionBytes);
+
+    let solutionStr = new TextDecoder().decode(new Uint8ClampedArray(solutionBytes)); // enthält möglicherweise NULL character, da vor der fft 0 Bits eingefügt wurden
+    
+    let nullIndex = solutionStr.indexOf("\u0000");
+    
+    if (nullIndex !== -1) solutionStr = solutionStr.substring(0,nullIndex);
+    console.log(solutionStr);
+    return solutionStr;
+}
+
+function sinnvollRunden(x) {
+    return Math.round(x*1000000)/1000000;
+}
+
+</script>
+    </head>
+    <body>
+        <textarea placeholder="Text" id="text" rows="2" cols="64"></textarea><br>
+        <input type="button" value="Rätsel erstellen ↓" onclick="document.getElementById('code').value = erstellen(document.getElementById('text').value)" title="Rätsel erstellen">
+        <input type="button" value="↑ Rätsel lösen" onclick="document.getElementById('text').value = loesen(document.getElementById('code').value)" title="Rätsel lösen"><br>
+        <textarea placeholder="Liste Komplexer Zahlen" id="code" rows="32" cols="64"></textarea>
+    
+        <h1>FFT</h1>
+        <b>Codieren:</b><br>
+        Text wird in Bits umgewandelt (ASCII bzw UTF-8 bei Sonderzeichen)<br>
+        Bits (0 oder 1) bilden die (reelen) Samples, die mit der FFT in Komplexe Koeffizienten umgewandelt werden, die ausgegeben werden.<br>
+        Sollte die Anzahl der Bits keine 2er Potenz sein, müssten am Ende Nullen eingefügt werden, bis die Länge eine 2er Potenz ist.<br><br>
+        
+        <b>Decodieren</b><br>
+        Text aus Komplexen Zahlen muss eingelesen und mit diesen die inverse FFT durchgefürt werden.<br>
+        Die Imaginärteile des Ergebnisses müssten 0 sein, die Realteile 0 oder 1. (Aufgrund Gleitkomma ungenauigkeiten kann es leicht von 0 oder 1 abweichen)<br>
+        Die Realteile des Ergebnisses ergeben die Bits des UTF-8 / ASCII Strings.<br>
+        Am Ende des Ergebnisses befinden sich NULL Character, wenn Nullen beim Codieren eingefügt wurden. Diese sollten wieder entfernt werden.<br>
+    </body>
+</html>
