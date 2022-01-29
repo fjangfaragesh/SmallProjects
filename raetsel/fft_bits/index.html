@@ -7,7 +7,7 @@
 
 // ----------------------- Rätsel erstellen -------------------------------------
 
-function erstellen(str) {
+function erstellen(str,   asTSV) {
     let dataBytes = new TextEncoder().encode(str);// in UTF-8 bytes umwandeln
     let dataBits = []; // liste aus 0 und 1 anlegen
 
@@ -36,9 +36,11 @@ function erstellen(str) {
 
     let s = "";
 
-    
-    for (let z of magischeZahlen) s += sinnvollRunden(z[0]) + ((z[1] < 0.0) ? " - " + -sinnvollRunden(z[1]) : " + " + sinnvollRunden(z[1])) + "i\n";// "x + yi" oder "x - ai" für jede Zahl in Text einfügen
-    // for (let z of magischeZahlen) s += z[0] + "\t" + z[1] + "\n";// real und imaginärteil als tsv ausgeben
+    if (asTSV) {
+        for (let z of magischeZahlen) s += z[0] + "\t" + z[1] + "\n";// real und imaginärteil als tsv ausgeben
+    } else {
+        for (let z of magischeZahlen) s += sinnvollRunden(z[0]) + ((z[1] < 0.0) ? " - " + -sinnvollRunden(z[1]) : " + " + sinnvollRunden(z[1])) + "i\n";// "x + yi" oder "x - ai" für jede Zahl in Text einfügen
+    }
     return s;
 }
 
@@ -99,6 +101,7 @@ function loesen(s) {
 function sinnvollRunden(x) {
     return Math.round(x*1000000)/1000000;
 }
+
 
 </script>
     </head>

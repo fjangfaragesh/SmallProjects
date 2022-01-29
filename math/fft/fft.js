@@ -9,10 +9,16 @@ FFT.realFFT = function(p, doInverse) {
 // p: [[real,imag],[real,imag], ...] p.legth power of 2
 FFT.fft = function(p, doInverse, _recursiveCall) {
     const n = p.length;
-    if (Math.log2(n) !== Math.floor(Math.log2(n))) throw new Error("length=" + n + " is not a power of 2.");
+    
+    if (n === 0) {
+        return [];
+    }
+    
     if (n === 1) {
         return [[p[0][0],p[0][1]]];
     }
+    
+    if (Math.log2(n) !== Math.floor(Math.log2(n))) throw new Error("length=" + n + " is not a power of 2.");
     let omegaArg = -2.0*Math.PI/n;
     
     if (doInverse) {
