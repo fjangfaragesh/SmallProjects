@@ -31,7 +31,7 @@ function stop() {
 }
 function finishGame() {
     let timeMillis = Date.now() - startTime;
-    alert("Zeichen:" + challangeText.length + "\nZeit: " + timeMillis/1000  + "s\nZeichen pro Minute: " + (1000*60*challangeText.length)/timeMillis + "s\nFehler: " + backspaces + "\nFehlerrate: " + 100*backspaces/challangeText.length + "%");
+    alert("Zeichen:" + challangeText.length + "\nZeit: " + timeMillis/1000  + "s\nZeichen pro Minute: " + (1000*60*challangeText.length)/timeMillis + "\nFehler: " + backspaces + "\nFehlerrate: " + 100*backspaces/challangeText.length + "%");
     stop();
 }
 
